@@ -24,10 +24,10 @@ jobs:
       run: go version
 
     - name: Run
-      run: go run ./...
+      run: go run ./*.go
 
     - name: Build
-      run: go build -v ./...
+      run: go build -v ./*.go
 
     - name: Test with Go
       run: go test -json > TestResults-${{ matrix.go-version }}.json
