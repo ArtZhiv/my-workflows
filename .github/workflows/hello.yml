@@ -24,4 +24,4 @@ jobs:
       run: go version
 
     - name: Run
-      run: go run ./*.go
+      run: go run ./cmd/*.go
