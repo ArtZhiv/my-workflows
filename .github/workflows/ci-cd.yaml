@@ -62,7 +62,6 @@ jobs:
 
       - name: Login to ghcr.io
         uses: docker/login-action@v2
-        # if: github.event_name != 'pull_request'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -74,11 +73,8 @@ jobs:
           context: .
           push: true    
           file: Dockerfile.multistage
-          target: build-release-stage
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-        #   cache-from: type=local,src=/tmp/.buildx-cache
-        #   cache-to:   type=local,dest=/tmp/.buildx-cache
 
       - name: Slack Notification
         uses: 8398a7/action-slack@v3
