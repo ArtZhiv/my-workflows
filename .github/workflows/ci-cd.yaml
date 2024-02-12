@@ -13,7 +13,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  MY_TOKEN: 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
 
 jobs:
   build-and-test:
@@ -68,7 +67,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
         #   password: ${{ secrets.GITHUB_TOKEN }}
-          password: ${{ env.MY_TOKEN }}
+          password: ${{ secrets.DEPLOY }}
         
 
       - name: Push release to Docker Hub
