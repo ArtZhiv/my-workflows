@@ -17,6 +17,11 @@ env:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    permissions:
+        contents: read
+        packages: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,6 +73,7 @@ jobs:
         uses: docker/build-push-action@v4
         if: github.event_name != 'pull_request'
         with:
+          context: .
           push: true    
           file: Dockerfile.multistage
           target: build-release-stage
