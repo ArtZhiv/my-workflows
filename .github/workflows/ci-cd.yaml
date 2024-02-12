@@ -68,7 +68,7 @@ jobs:
         uses: docker/build-push-action@v4
         if: github.event_name != 'pull_request'
         with:
-          push: true
+          push: true    
           file: Dockerfile.multistage
           target: build-release-stage
           tags: ${{ steps.meta.outputs.tags }}
