@@ -1,4 +1,4 @@
-name: Release to Docker Hub if tests OK (CI/CD)
+name: Release to ghcr.io if tests OK (CI/CD)
 
 on:
   push:
@@ -33,7 +33,8 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ github.actor }}/${{ github.event.repository.name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+# ${{ github.actor }}/${{ github.event.repository.name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -70,13 +71,13 @@ jobs:
 
       - name: Push release to ghcr.io
         uses: docker/build-push-action@v2
-        if: github.event_name != 'pull_request'
+# if: github.event_name != 'pull_request'
         with:
           context: .
           push: true    
           file: ../Dockerfile.multistage
-          target: build-release-stage
+        #   target: build-release-stage
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to:   type=local,dest=/tmp/.buildx-cache
+        #   cache-from: type=local,src=/tmp/.buildx-cache
+        #   cache-to:   type=local,dest=/tmp/.buildx-cache
