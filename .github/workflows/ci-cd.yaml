@@ -75,7 +75,7 @@ jobs:
         with:
           context: .
           push: true    
-          file: ../Dockerfile.multistage
+          file: Dockerfile.multistage
         #   target: build-release-stage
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
