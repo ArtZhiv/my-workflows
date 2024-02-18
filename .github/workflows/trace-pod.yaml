@@ -8,20 +8,11 @@ on:
       - cron: '5 * * * *'
 
 jobs:
-    production:
+    k8s:
         runs-on: ubuntu-latest
         steps:
             - name: checkout repository
               uses: actions/checkout@master
-
-            # - name: setup kubectl
-            #   run: |
-            #     sudo apt-get update
-            #     sudo apt-get install -y apt-transport-https ca-certificates curl
-            #     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-            #     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-            #     sudo apt-get update
-            #     sudo apt-get install -y kubectl
             
             - name: setup ssh
               run: |
@@ -32,35 +23,49 @@ jobs:
                 chmod 600 ~/.ssh/id_rsa
                 chmod 600 ~/.ssh/id_rsa.pub
                 chmod 600 ~/.ssh/config
-                # ssh-keyscan -H ${{ secrets.IP }} >> ~/.ssh/known_hosts
+                ssh -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
               shell: bash
 
-            - name: setup configs k*s
+            - name: setup configs k8s
               run: |
                 mkdir -p ~/.kube
                 echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config-k8s
-                echo "${{ secrets.CONFIG_K3S }}" > ~/.kube/config-k3s
-                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/onfig-k8s
-                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
+                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k8s
 
-            - name: kubectl get pods --context=k8s
+            - name: kubectl get pods
               uses: actions-hub/kubectl@master
               env:
                 KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
               with:
                 args: get pods
 
-            - name: kubectl get pods --context=k3s
+    k3s:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout repository
+              uses: actions/checkout@master
+            
+            - name: setup ssh
+              run: |
+                mkdir -p ~/.ssh
+                echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/id_rsa
+                echo "${{ secrets.SSH_PUB_KEY }}" > ~/.ssh/id_rsa.pub
+                echo "${{ secrets.CONFIG_SSH }}" > ~/.ssh/config
+                chmod 600 ~/.ssh/id_rsa
+                chmod 600 ~/.ssh/id_rsa.pub
+                chmod 600 ~/.ssh/config
+                ssh -L 6443:127.0.0.1:6443 root@192.168.203.3 -f -N
+              shell: bash
+
+            - name: setup configs k3s
+              run: |
+                mkdir -p ~/.kube
+                echo "${{ secrets.CONFIG_K3S }}" > ~/.kube/config-k3s
+                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
+
+            - name: kubectl get pods
               uses: actions-hub/kubectl@master
               env:
                 KUBE_CONFIG: ${{ secrets.CONFIG_K3S }}
               with:
                 args: get pods
-                
-            # - name: check k8s
-            #   run: |
-            #     kubectl get pods -A --context=k8s
-
-            # - name: check k3s
-            #   run: |
-            #     kubectl get pods -A --context=k3s
