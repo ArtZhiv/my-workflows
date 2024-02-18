@@ -1,0 +1,48 @@
+name: Create Cluster
+
+on: [push]
+
+jobs:
+    kind:
+        runs-on: ubuntu-latest
+        steps:
+        - name: checkout repository
+          uses: actions/checkout@master
+
+        - name: setup-kind
+          uses: engineerd/setup-kind@v0.1.0
+
+        - name: Testing-kind
+          run: |
+            export KUBECONFIG="$(kind get kubeconfig-path)"
+            kubectl cluster-info
+            kubectl get pods -n kube-system
+            echo "current context: " $(kubectl config current-context)
+            echo "env kubeconfig: " ${KUBECONFIG}
+            kubectl get nodes
+            kubectl get pods -A
+            kubectl version
+            kind version
+          shell: bash
+    
+    minikube:
+        runs-on: ubuntu-latest
+        steps:
+        - name: checkout repository
+          uses: actions/checkout@master
+        
+        - name: setup-minikube
+          uses: medyagh/setup-minikube@master
+
+        - name: Testing-minikube
+          run: |
+            export KUBECONFIG="$(kind get kubeconfig-path)"
+            kubectl cluster-info
+            kubectl get pods -n kube-system
+            echo "current context: " $(kubectl config current-context)
+            echo "env kubeconfig: " ${KUBECONFIG}
+            kubectl get nodes
+            kubectl get pods -A
+            kubectl version
+            minikube version
+          shell: bash    
