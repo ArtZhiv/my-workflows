@@ -23,6 +23,7 @@ jobs:
                 chmod 600 ~/.ssh/id_rsa
                 chmod 600 ~/.ssh/id_rsa.pub
                 chmod 600 ~/.ssh/config
+                echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
                 ssh -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
               shell: bash
 
@@ -54,6 +55,7 @@ jobs:
                 chmod 600 ~/.ssh/id_rsa
                 chmod 600 ~/.ssh/id_rsa.pub
                 chmod 600 ~/.ssh/config
+                echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
                 ssh -L 6443:127.0.0.1:6443 root@192.168.203.3 -f -N
               shell: bash
 
