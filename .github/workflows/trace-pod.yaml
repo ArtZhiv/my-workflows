@@ -31,6 +31,7 @@ jobs:
                 echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
                 chmod 644 ~/.ssh/known_hosts
                 ssh -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
+                sudo lsof -i -n -P | grep -E '^sshd\>'
               shell: bash
 
             - name: kubectl get pods
@@ -63,6 +64,7 @@ jobs:
                 echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
                 chmod 644 ~/.ssh/known_hosts
                 ssh -L 6444:127.0.0.1:6443 root@192.168.203.3 -f -N
+                sudo lsof -i -n -P | grep -E '^sshd\>'
               shell: bash
 
             - name: kubectl get pods
