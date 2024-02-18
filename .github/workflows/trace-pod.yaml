@@ -37,7 +37,7 @@ jobs:
               run: |
                 mkdir -p ~/.kube
                 echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config
-            #     # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config
+                export KUBECONFIG="$HOME/.kube/config"
 
             - name: kubectl get pods
               uses: actions-hub/kubectl@master
