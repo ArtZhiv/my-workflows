@@ -1,4 +1,4 @@
-name: Create Cluster
+name: Installing Prerequisites (Minikube Cluster)
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
 
         - name: Testing-minikube
           run: |
-            export KUBECONFIG="$(kind get kubeconfig-path)"
+            export KUBECONFIG="$(minikube get kubeconfig-path)"
             kubectl cluster-info
             kubectl get pods -n kube-system
             echo "current context: " $(kubectl config current-context)
