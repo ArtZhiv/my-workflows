@@ -44,6 +44,12 @@ jobs:
 
             - name: setup-minikube
               uses: medyagh/setup-minikube@master
+            
+            - name: add config k8s
+              run: |
+                mkdir -p ~/.kube
+                touch ~/.kube/config
+                echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config
 
             - name: Testing-minikube
               run: |
