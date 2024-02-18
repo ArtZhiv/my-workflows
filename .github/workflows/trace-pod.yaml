@@ -33,16 +33,16 @@ jobs:
                 ssh -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
               shell: bash
 
-            - name: setup configs k8s
-              run: |
-                mkdir -p ~/.kube
-                echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config
-                export KUBECONFIG="$HOME/.kube/config"
+            # - name: setup configs k8s
+            #   run: |
+            #     mkdir -p ~/.kube
+            #     echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config
+            #     export KUBECONFIG="$HOME/.kube/config"
 
             - name: kubectl get pods
               uses: actions-hub/kubectl@master
-            #   env:
-            #     KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
+              env:
+                KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
               with:
                 args: get pods
 
@@ -71,11 +71,11 @@ jobs:
                 ssh -L 6443:127.0.0.1:6443 root@192.168.203.3 -f -N
               shell: bash
 
-            - name: setup configs k3s
-              run: |
-                mkdir -p ~/.kube
-                echo "${{ secrets.CONFIG_K3S }}" > ~/.kube/config-k3s
-                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
+            # - name: setup configs k3s
+            #   run: |
+            #     mkdir -p ~/.kube
+            #     echo "${{ secrets.CONFIG_K3S }}" > ~/.kube/config-k3s
+            #     # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
 
             - name: kubectl get pods
               uses: actions-hub/kubectl@master
