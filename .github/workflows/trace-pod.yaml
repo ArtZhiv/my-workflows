@@ -36,8 +36,8 @@ jobs:
             - name: setup configs k8s
               run: |
                 mkdir -p ~/.kube
-                echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config-k8s
-                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k8s
+                echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config
+                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config
 
             - name: kubectl get pods
               uses: actions-hub/kubectl@master
