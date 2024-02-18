@@ -13,6 +13,15 @@ jobs:
         steps:
             - name: checkout repository
               uses: actions/checkout@master
+
+            - name: setup kubectl
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y apt-transport-https ca-certificates curl
+                curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+                echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+                sudo apt-get update
+                sudo apt-get install -y kubectl
             
             - name: setup ssh
               run: |
@@ -34,12 +43,19 @@ jobs:
                 export KUBECONFIG=$HOME/.kube/onfig-k8s
                 export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
 
-            - name: kubectl get pods --context=k8s
-              uses: actions-hub/kubectl@master
-              with:
-                args: get pods -A --context=k8s
+            # - name: kubectl get pods --context=k8s
+            #   uses: actions-hub/kubectl@master
+            #   with:
+            #     args: get pods -A --context=k8s
 
-            - name: kubectl get pods --context=k3s
-              uses: actions-hub/kubectl@master
-              with:
-                args: get pods -A --context=k3s
+            # - name: kubectl get pods --context=k3s
+            #   uses: actions-hub/kubectl@master
+            #   with:
+            #     args: get pods -A --context=k3s
+            - name: check k8s
+              run: |
+                kubectl get pods -A --context=k8s
+
+            - name: check k3s
+              run: |
+                kubectl get pods -A --context=k3s
