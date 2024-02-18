@@ -40,7 +40,7 @@ jobs:
                 mkdir -p ~/.kube
                 echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config-k8s
                 echo "${{ secrets.CONFIG_K3S }}" > ~/.kube/config-k3s
-                export KUBECONFIG=$HOME/.kube/onfig-k8s
+                export KUBECONFIG=$KUBECONFIG:$HOME/.kube/onfig-k8s
                 export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
 
             - name: kubectl get pods --context=k8s
