@@ -40,22 +40,22 @@ jobs:
                 mkdir -p ~/.kube
                 echo "${{ secrets.CONFIG_K8S }}" > ~/.kube/config-k8s
                 echo "${{ secrets.CONFIG_K3S }}" > ~/.kube/config-k3s
-                export KUBECONFIG=$KUBECONFIG:$HOME/.kube/onfig-k8s
-                export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
+                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/onfig-k8s
+                # export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config-k3s
 
             - name: kubectl get pods --context=k8s
               uses: actions-hub/kubectl@master
               env:
                 KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
               with:
-                args: get pods -A --context=k8s
+                args: get pods
 
             - name: kubectl get pods --context=k3s
               uses: actions-hub/kubectl@master
               env:
                 KUBE_CONFIG: ${{ secrets.CONFIG_K3S }}
               with:
-                args: get pods -A --context=k3s
+                args: get pods
                 
             # - name: check k8s
             #   run: |
