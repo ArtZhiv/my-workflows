@@ -35,13 +35,16 @@ jobs:
                 sudo lsof -i -n -P | grep -E '^ssh\>'
               shell: bash
 
-            - name: kubectl get pods
-              uses: actions-hub/kubectl@master
-              env:
-                KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
-              with:
-                args: get pods
-                
+            # - name: kubectl get pods
+            #   uses: actions-hub/kubectl@master
+            #   env:
+            #     KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
+            #   with:
+            #     args: get pods
+
+            - name: setup-minikube
+              uses: medyagh/setup-minikube@master
+
             - name: Testing-minikube
               run: |
                 kubectl cluster-info
