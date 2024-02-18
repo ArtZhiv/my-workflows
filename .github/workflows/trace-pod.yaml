@@ -41,6 +41,15 @@ jobs:
                 KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
               with:
                 args: get pods
+                
+            - name: Testing-minikube
+              run: |
+                kubectl cluster-info
+                kubectl get pods -n kube-system
+                kubectl get nodes
+                kubectl get pods -A
+                kubectl version
+              shell: bash 
 
     k3s:
         runs-on: ubuntu-latest
