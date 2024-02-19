@@ -58,7 +58,7 @@ jobs:
           kubectl get pods -A --field-selector=status.phase!=Running 2>&1 | tee ${{ env.path }}${{ env.file_name }}
           cat ${{ env.path }}${{ env.file_name }}
           echo "$(cat ${{ env.path }}${{ env.file_name }})" >> crash_report 2>&1
-          echo "pods-dont-work=$(cat ${{ env.path }}${{ env.file_name }} | grep -v 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
+          echo "pods-dont-work=$(cat ${{ env.path }}${{ env.file_name }} | grep 'No resources found' | wc -l)" >> $GITHUB_OUTPUT
 
       - name: Save Artifact
         if: steps.check-pods-k8s.outputs.pods-dont-work != 1
