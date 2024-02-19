@@ -21,30 +21,47 @@ jobs:
                 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
                 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-            - name: setup ssh
+            - name: Check SSH_PKEY Secret
               run: |
-                mkdir -p ~/.ssh/
-                touch ~/.ssh/private
-                echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/private
-                chmod 600 ~/.ssh/private
-                echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
-                echo "${{ secrets.CONFIG_SSH }}" >> ~/.ssh/config
-                ls -al ~/.ssh/
-              env:
-                SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
-                SSH_KNOW_HOST: ${{ secrets.SSH_KNOW_HOST }}
-
-              shell: bash
-
-            - name: setup ssh tunnel
+                  echo "Secret SSH_PKEY: ${{ secrets.SSH_PRIV_KEY }}"
+                  echo "${{ secrets.SSH_PRIV_KEY }}" > secret.key.pem
+                  chmod 600 secret.key.pem
+                  ssh-keygen -l -f secret.key.pem
+              continue-on-error: true
+          
+            - name: Connect to K8s master host
               run: |
-                ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} > ~/.ssh/known_hosts
-                ssh -i ~/.ssh/private -F ~/.ssh/config -f -N -J ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -L 6443:127.0.0.1:6443 root@192.168.208.5
+                  mkdir ~/.ssh
+                  eval ssh-agent -s
+                  ssh-add - <<< "${{ secrets.SSH_PRIV_KEY }}"
+                  ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} >> ~/.ssh/known_hosts
+                  ssh ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }} ssh-keyscan 192.168.208.5 >> ~/.ssh/known_hosts
+                  ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }}" root@192.168.208.5 "kubectl get pods -A"
 
-            - name: ssh tunnels
-              run: |
-                sudo lsof -i -n -P | grep -E '^sshd\>'
-                sudo lsof -i -n -P | grep -E '^ssh\>'
+            # - name: setup ssh
+            #   run: |
+            #     mkdir -p ~/.ssh/
+            #     touch ~/.ssh/private
+            #     echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/private
+            #     chmod 600 ~/.ssh/private
+            #     echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
+            #     echo "${{ secrets.CONFIG_SSH }}" >> ~/.ssh/config
+            #     ls -al ~/.ssh/
+            #   env:
+            #     SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
+            #     SSH_KNOW_HOST: ${{ secrets.SSH_KNOW_HOST }}
+
+            #   shell: bash
+
+            # - name: setup ssh tunnel
+            #   run: |
+            #     ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} > ~/.ssh/known_hosts
+            #     ssh -i ~/.ssh/private -F ~/.ssh/config -f -N -J ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -L 6443:127.0.0.1:6443 root@192.168.208.5
+
+            # - name: ssh tunnels
+            #   run: |
+            #     sudo lsof -i -n -P | grep -E '^sshd\>'
+            #     sudo lsof -i -n -P | grep -E '^ssh\>'
 
             # - name: setup ssh
             #   uses: webfactory/ssh-agent@v0.9.0
@@ -55,12 +72,12 @@ jobs:
             #   run:
             #     ssh -i  -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
    
-            - name: Check Kubernetes Nodes
-              run: |
-                echo "${{ secrets.CONFIG_K8S }}" > $HOME/.kube/config
-                echo $HOME/.kube/config
-                export KUBECONFIG=$HOME/.kube/config
-                kubectl get nodes
+            # - name: Check Kubernetes Nodes
+            #   run: |
+            #     echo "${{ secrets.CONFIG_K8S }}" > $HOME/.kube/config
+            #     echo $HOME/.kube/config
+            #     export KUBECONFIG=$HOME/.kube/config
+            #     kubectl get nodes
 
             # - name: kubectl get pods
             #   uses: actions-hub/kubectl@master
