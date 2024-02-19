@@ -51,7 +51,7 @@ jobs:
           echo "${{ secrets.K8S_CONF }}" > ~/.kube/config
           export KUBECONFIG=$HOME/.kube/config
           kubectl get pods -A
-          echo "K8S_PODS_JSON='$(kubectl get pods -A -o json)'" >> $GITHub_ENV
+          echo "K8S_PODS_JSON='$(kubectl get pods -A -o json)'" >> $GITHUB_ENV
           kubectl get pods -A --field-selector=status.phase!=Running
 
       - name: Check Crash pods k8s
