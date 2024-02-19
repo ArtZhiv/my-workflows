@@ -18,8 +18,13 @@ jobs:
           mkdir -p ~/.ssh/
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ls -la ~/.ssh/
+          cat ~/.ssh/id_rsa
+          cat ~/.ssh/khown_hosts
           echo "$(ssh-keyscan -p ${{ secrets.EC_BASTION_PORT }} ${{ secrets.EC_BASTION_IP }}" >> ~/.ssh/khown_hosts
+          cat ~/.ssh/khown_hosts
           ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }} ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
+          cat ~/.ssh/khown_hosts
           eval `ssh-agent -s`
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
           
