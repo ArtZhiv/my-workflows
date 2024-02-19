@@ -14,29 +14,39 @@ jobs:
             - name: checkout repository
               uses: actions/checkout@master
             
-            - name: Install kubectl
-              run: |
-                sudo apt-get update
-                sudo apt-get install -y apt-transport-https ca-certificates curl
-                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+            # - name: Install kubectl
+            #   run: |
+            #     sudo apt-get update
+            #     sudo apt-get install -y apt-transport-https ca-certificates curl
+            #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            #     sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-            - name: Check SSH_PKEY Secret
+            - name: check secrets
               run: |
-                  echo "Secret SSH_PKEY: ${{ secrets.SSH_PUB_KEY }}"
-                  echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
-                  chmod 600 secret.key.pem
-                  ssh-keygen -l -f secret.key.pem
-              continue-on-error: true
+                echo "${{ secrets.BASTION_HOST }}"
+                echo "${{ secrets.BASTION_NAME }}"
+                echo "${{ secrets.BASTION_PORT }}"
+                echo "${{ secrets.CONFIG_K8S }}"
+                echo "${{ secrets.SSH_KNOW_HOST }}"
+                echo "${{ secrets.SSH_PUB_KEY }}"
+                echo "${{ secrets.SSH_PRIV_KEY }}"
+
+            # - name: Check SSH_PKEY Secret
+            #   run: |
+            #       echo "Secret SSH_PKEY: ${{ secrets.SSH_PUB_KEY }}"
+            #       echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
+            #       chmod 600 secret.key.pem
+            #       ssh-keygen -l -f secret.key.pem
+            #   continue-on-error: true
           
-            - name: Connect to K8s master host
-              run: |
-                  mkdir ~/.ssh
-                  eval ssh-agent -s
-                  ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
-                  ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} >> ~/.ssh/known_hosts
-                  ssh ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }} ssh-keyscan root@192.168.208.5 >> ~/.ssh/known_hosts
-                  ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }}" root@192.168.208.5 "kubectl get pods -A"
+            # - name: Connect to K8s master host
+            #   run: |
+            #       mkdir ~/.ssh
+            #       eval ssh-agent -s
+            #       ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
+            #       ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} >> ~/.ssh/known_hosts
+            #       ssh ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }} ssh-keyscan root@192.168.208.5 >> ~/.ssh/known_hosts
+            #       ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }}" root@192.168.208.5 "kubectl get pods -A"
 
             # - name: setup ssh
             #   run: |
