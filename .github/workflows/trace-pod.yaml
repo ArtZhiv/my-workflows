@@ -14,29 +14,38 @@ jobs:
             - name: checkout repository
               uses: actions/checkout@master
             
+            - name: Install kubectl
+              run: |
+                sudo apt-get update && sudo apt-get upgrade
+                sudo apt-get install -y apt-transport-https gnupg2
+                curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+                echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+                sudo apt-get update
+                sudo apt-get install -y kubectl
+                kubectl --version
+
             - name: setup ssh
               run: |
-                mkdir -p ~/.ssh
-                # chmod 700 ~/.ssh
-                touch ~/.ssh/private.key
-                echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/private.key
-                chmod 600 ~/.ssh/private.key
-                # touch ~/.ssh/id_rsa.pub
-                # echo "${{ secrets.SSH_PUB_KEY }}" > ~/.ssh/id_rsa.pub
-                # chmod 600 ~/.ssh/id_rsa.pub
-                touch ~/.ssh/config
-                echo "${{ secrets.CONFIG_SSH }}" > ~/.ssh/config
-                # chmod 644 ~/.ssh/config
-                touch ~/.ssh/known_hosts
+                mkdir -p ~/.ssh/
+                touch ~/.ssh/private
+                echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/private
+                chmod 600 ~/.ssh/private
                 echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
-                # chmod 644 ~/.ssh/known_hosts
-                sudo lsof -i -n -P | grep -E '^sshd\>'
-                sudo lsof -i -n -P | grep -E '^ssh\>'
+                ls -al ~/.ssh/
+              env:
+                SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
+                SSH_KNOW_HOST: ${{ secrets.SSH_KNOW_HOST }}
+
               shell: bash
 
             - name: setup ssh tunnel
               run: 
-                ssh -i ~/.ssh/private.key -f -N -L 6443:127.0.0.1:6443 root@192.168.208.5
+                ssh -i ~/.ssh/private -f -N -J ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -L 6443:127.0.0.1:6443 root@192.168.208.5
+
+            - name: ssh tunnels
+              run: |
+                sudo lsof -i -n -P | grep -E '^sshd\>'
+                sudo lsof -i -n -P | grep -E '^ssh\>'
 
             # - name: setup ssh
             #   uses: webfactory/ssh-agent@v0.9.0
@@ -46,14 +55,7 @@ jobs:
             # - name: Create SSH tunnel
             #   run:
             #     ssh -i  -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
-
-            - name: Install kubectl
-              run: |
-                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                chmod +x kubectl
-                sudo mv kubectl /usr/local/bin/
-                kubectl --version
-    
+   
             - name: Check Kubernetes Nodes
               run: |
                 echo "${{ secrets.CONFIG_K8S }}" > $HOME/.kube/config
