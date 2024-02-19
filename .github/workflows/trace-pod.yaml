@@ -23,8 +23,8 @@ jobs:
 
             - name: Check SSH_PKEY Secret
               run: |
-                  echo "Secret SSH_PKEY: ${{ secrets.SSH_PRIV_KEY }}"
-                  echo "${{ secrets.SSH_PRIV_KEY }}" > secret.key.pem
+                  echo "Secret SSH_PKEY: ${{ secrets.SSH_PUB_KEY }}"
+                  echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
                   chmod 600 secret.key.pem
                   ssh-keygen -l -f secret.key.pem
               continue-on-error: true
@@ -33,7 +33,7 @@ jobs:
               run: |
                   mkdir ~/.ssh
                   eval ssh-agent -s
-                  ssh-add - <<< "${{ secrets.SSH_PRIV_KEY }}"
+                  ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
                   ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} >> ~/.ssh/known_hosts
                   ssh ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }} ssh-keyscan 192.168.208.5 >> ~/.ssh/known_hosts
                   ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }}" root@192.168.208.5 "kubectl get pods -A"
