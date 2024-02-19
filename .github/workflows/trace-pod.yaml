@@ -34,6 +34,19 @@ jobs:
 
           ssh ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A"
   
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Check Kubernetes Nodes
+        run: |
+          touch ~/.kube/config
+          echo "${{ secrets.K8S_CONF }}" > ~/.kube/config
+          export KUBECONFIG=$HOME/.kube/config
+          kubectl get pods -A
+
       - name: Check Crash pods k8s
         id: check-pods-k8s
         run: |
