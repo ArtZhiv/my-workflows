@@ -70,9 +70,9 @@ jobs:
         run:
           echo "${{ env.artifact_name }}:" && echo "${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
   
-      - name: Slack Notification k8s (fail)
+      - name: Slack Notification k8s (fail pods)
         uses: 8398a7/action-slack@v3
-        if: steps.check-pods-k8s.outputs.pods-failed == 1
+        if: steps.check-pods-k8s.outputs.pods-dont-work == 1
         with:
           status: ${{ job.status }}
           fields: all
