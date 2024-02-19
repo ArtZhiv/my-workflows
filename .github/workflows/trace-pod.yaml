@@ -40,29 +40,29 @@ jobs:
               with:
                 ssh-private-key: ${{ secrets.SSH_PRIV_KEY }}
 
-            - name: Create SSH tunnel
-              run:
-                ssh -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
+            # - name: Create SSH tunnel
+            #   run:
+            #     ssh -i  -L 6443:127.0.0.1:6443 root@192.168.208.5 -f -N
 
-            - name: Install kubectl
-              run: |
-                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                chmod +x kubectl
-                sudo mv kubectl /usr/local/bin/
-                kubectl version
+            # - name: Install kubectl
+            #   run: |
+            #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            #     chmod +x kubectl
+            #     sudo mv kubectl /usr/local/bin/
+            #     kubectl version
     
-            - name: Check Kubernetes Nodes
-              run: |
-                echo "${{ secrets.CONFIG_K8S }}" > $HOME/.kube/config
-                export KUBECONFIG=$HOME/.kube/config
-                kubectl get nodes
+            # - name: Check Kubernetes Nodes
+            #   run: |
+            #     echo "${{ secrets.CONFIG_K8S }}" > $HOME/.kube/config
+            #     export KUBECONFIG=$HOME/.kube/config
+            #     kubectl get nodes
 
-            # - name: kubectl get pods
-            #   uses: actions-hub/kubectl@master
-            #   env:
-            #     KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
-            #   with:
-            #     args: get pods
+            - name: kubectl get pods
+              uses: actions-hub/kubectl@master
+              env:
+                KUBE_CONFIG: ${{ secrets.CONFIG_K8S }}
+              with:
+                args: get pods
 
     # k3s:
     #     runs-on: ubuntu-latest
