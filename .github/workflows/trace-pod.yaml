@@ -49,7 +49,7 @@ jobs:
 
       - name: Slack Notification k8s
         uses: 8398a7/action-slack@v3
-        if: always()
+        if: steps.check-pods-k8s.outputs.pods-failed == 1
         with:
           status: ${{ job.status }}
           fields: all
