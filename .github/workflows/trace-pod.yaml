@@ -54,16 +54,18 @@ jobs:
           export KUBECONFIG=$HOME/.kube/config
           kubectl get pods -A
           kubectl get pods -A -o json
-          kubectl get pods -A --field-selector=status.phase!=Running
+          kubectl get pods -A --field-selector=status.phase!=Running >>
 
       - name: Check Crash pods k8s
         id: check-pods-k8s
         run: |
-          echo "$(cat output_k8s.log)" >> crash_report 2>&1
-          echo "pods-dont-work=$(cat output_k8s.log | grep -v 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
-          kubectl get pods -A --field-selector=status.phase!=Running 2>&1 | tee ${{ env.path }}${{ env.file_name }}
+          kubectl get pods -A 2>&1 | tee ${{ env.path }}${{ env.file_name }}
+          echo "$(cat ${{ env.path }}${{ env.file_name }})" >> crash_report 2>&1
+          echo "pods-dont-work=$(cat ${{ env.path }}${{ env.file_name }} | grep -v 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
+          cat ${{ env.path }}${{ env.file_name }}
 
       - name: Save Artifact
+        if: steps.check-pods-k8s.outputs.pods-dont-work != 1
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.artifact_name }}
@@ -73,34 +75,23 @@ jobs:
         run:
           echo "${{ env.artifact_name }}:" && cat ${{ env.path }}${{ env.file_name }}
   
-      - name: Upload Crashed Pods List k8s
-        if: steps.check-pods-k8s.outputs.pods-dont-work != 1
-        uses: actions/upload-artifact@v4
-        with:
-          name: Dead pods k8s
-          path: output_k8s.log
+      # - name: Upload Crashed Pods List k8s
+      #   if: steps.check-pods-k8s.outputs.pods-dont-work != 1
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: Dead pods k8s
+      #     path: output_k8s.log
 
       - name: Slack Notification k8s (fail)
         uses: 8398a7/action-slack@v3
         if: steps.check-pods-k8s.outputs.pods-failed == 1
         with:
-          icon_url: 'https://raw.githubusercontent.com/Ensono/azure-vector-icons/master/renders/alert.png'
           status: ${{ job.status }}
           fields: all
           text: "Some pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Slack Notification k8s (ok)
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          icon_url: 'https://raw.githubusercontent.com/Ensono/azure-vector-icons/master/renders/healthy.png'
-          status: ${{ job.status }}
-          fields: all
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          
     # k3s:
     #     runs-on: ubuntu-latest
     #     steps:
