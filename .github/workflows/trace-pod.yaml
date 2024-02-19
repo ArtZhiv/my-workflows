@@ -12,8 +12,6 @@ env:
 jobs:
   k8s:
     runs-on: ubuntu-latest
-    outputs:
-      PodsDontWork: ${{ steps.check-pods-k8s.outputs.pods-dont-work }}
     steps:
       - uses: actions/checkout@master
       - name: Check SSH_PKEY Secret
@@ -70,9 +68,7 @@ jobs:
 
       - name: Read artifact
         run:
-          echo "${{ env.artifact_name }}:" && cat ${{ env.path }}${{ env.file_name }}
-          echo "OUTPUTS:"
-          echo "${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
+          echo "${{ env.artifact_name }}:" && echo "${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
   
       - name: Slack Notification k8s (fail)
         uses: 8398a7/action-slack@v3
