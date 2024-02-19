@@ -12,22 +12,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-
-      - name: setup ssh
+      - name: Check SSH_PKEY Secret
         run: |
-          mkdir -p ~/.ssh/
-          ls -la ~/.ssh/
-          touch ~/.ssh/khown_hosts
-          cat ~/.ssh/khown_hosts
-          echo "$(ssh-keyscan -p ${{ secrets.EC_BASTION_PORT }} ${{ secrets.EC_BASTION_IP }}" >> ~/.ssh/khown_hosts
-          cat ~/.ssh/khown_hosts
-          ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }} ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
-          cat ~/.ssh/khown_hosts
+          echo "Secret SSH_PKEY: ${{ secrets.SSH_PUB_KEY }}"
+          echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
+          chmod 600 secret.key.pem
+          ssh-keygen -l -f secret.key.pem
+        continue-on-error: true
+  
+      - name: Connect to K8s master host
+        run: |
+          mkdir ~/.ssh
           eval ssh-agent -s
           ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
-          cat ~/.ssh/id_rsa
-          
-          ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }}" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A"
+          ssh-keyscan -p 32510 ${{ secrets.EC_BASTION_IP }} >> ~/.ssh/known_hosts
+          ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510 ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
+          ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A" >> output_k8s.log
+  
+      - name: Check Crash pods k8s
+        id: check-pods-k8s
+        run: |
+          echo "$(cat output_k8s.log)" >> crash_report 2>&1
+          echo "pods-dont-work=$(cat output_k8s.log | grep -v 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
+  
+      - name: Upload Crashed Pods List k8s
+        if: steps.check-pods-k8s.outputs.pods-dont-work != 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dead pods k8s
+          path: output_k8s.log
 
     # k3s:
     #     runs-on: ubuntu-latest
