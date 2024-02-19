@@ -72,7 +72,7 @@ jobs:
         run:
           echo "${{ env.artifact_name }}:" && cat ${{ env.path }}${{ env.file_name }}
           echo "OUTPUTS:"
-          echo "${{ outputs.PodsDontWork }}"
+          echo "${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
   
       - name: Slack Notification k8s (fail)
         uses: 8398a7/action-slack@v3
