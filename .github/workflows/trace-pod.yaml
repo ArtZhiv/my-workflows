@@ -58,61 +58,86 @@ jobs:
         run: |
           kubectl get pods -A --field-selector=status.phase!=Running 2>&1 | tee ${{ env.path }}${{ env.file_name }}
           echo "pods-dont-work=$(cat ${{ env.path }}${{ env.file_name }} | grep -v 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
-          echo "pods-works=$(kubectl get pods -A)" >> $GITHUB_OUTPUT
 
       - name: Save Artifact
-        if: steps.check-pods-k8s.outputs.pods-dont-work == 1
+        if: steps.check-pods-k8s.outputs.pods-dont-work != 1
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.artifact_name }}
           path: ${{ env.path }}${{ env.file_name }}
-
-      - name: Read artifact
-        run:
-          echo "${{ env.artifact_name }}:" && echo "${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
   
       - name: Slack Notification k8s (fail pods)
         uses: 8398a7/action-slack@v3
-        if: steps.check-pods-k8s.outputs.pods-dont-work == 1
+        if: steps.check-pods-k8s.outputs.pods-dont-work != 1
         with:
           status: ${{ job.status }}
           fields: all
-          text: "Some pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-works }}"
+          text: "Some k8s pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-# Next JOB
+  k3s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Check SSH_PKEY Secret
+        run: |
+          echo "Secret SSH_PKEY: ${{ secrets.SSH_PUB_KEY }}"
+          echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
+          chmod 600 secret.key.pem
+          ssh-keygen -l -f secret.key.pem
+        continue-on-error: true
+  
+      - name: Connect to K3s master host
+        run: |
+          mkdir ~/.ssh
+          eval `ssh-agent -s`
+          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+          ssh-keyscan -p 32510 ${{ secrets.EC_BASTION_IP }} >> ~/.ssh/known_hosts
+          ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510 ssh-keyscan ${{ secrets.K3S_IP }} >> ~/.ssh/known_hosts
+          touch ~/.ssh/config
+          echo "${{ secrets.SSH_CONFIG }}" > ~/.ssh/config
 
-    # k3s:
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - name: checkout repository
-    #           uses: actions/checkout@master
-            
-    #         - name: setup ssh
-    #           run: |
-    #             mkdir -p ~/.ssh
-    #             chmod 700 ~/.ssh
-    #             touch ~/.ssh/id_rsa
-    #             echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/id_rsa
-    #             chmod 600 ~/.ssh/id_rsa
-    #             touch ~/.ssh/id_rsa.pub
-    #             echo "${{ secrets.SSH_PUB_KEY }}" > ~/.ssh/id_rsa.pub
-    #             chmod 600 ~/.ssh/id_rsa.pub
-    #             touch ~/.ssh/config
-    #             echo "${{ secrets.CONFIG_SSH }}" > ~/.ssh/config
-    #             chmod 644 ~/.ssh/config
-    #             touch ~/.ssh/known_hosts
-    #             echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
-    #             chmod 644 ~/.ssh/known_hosts
-    #             ssh -L 6444:127.0.0.1:6443 root@192.168.203.3 -f -N
-    #             sudo lsof -i -n -P | grep -E '^sshd\>'
-    #             sudo lsof -i -n -P | grep -E '^ssh\>'
-    #           shell: bash
+          ssh -L 6444:127.0.0.1:6443 ${{ secrets.K8S_USERNAME }}@${{ secrets.K3S_IP }} -f -N
+          sudo lsof -i -n -P | grep -E '^sshd\>'
+          sudo lsof -i -n -P | grep -E '^ssh\>'
+  
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
 
-    #         - name: kubectl get pods
-    #           uses: actions-hub/kubectl@master
-    #           env:
-    #             KUBE_CONFIG: ${{ secrets.CONFIG_K3S }}
-    #           with:
-    #             args: get pods
+      - name: Check K3S Pods
+        run: |
+          mkdir -p ~/.kube/
+          touch ~/.kube/config
+          echo "${{ secrets.K3S_CONF }}" > ~/.kube/config
+          export KUBECONFIG=$HOME/.kube/config
+
+          echo "k3s all pods: "
+          kubectl get pods -A
+
+      - name: Check Crash pods k3s
+        id: check-pods-k3s
+        run: |
+          kubectl get pods -A --field-selector=status.phase!=Running 2>&1 | tee ${{ env.path }}${{ env.file_name }}
+          echo "pods-dont-work=$(cat ${{ env.path }}${{ env.file_name }} | grep -v 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
+
+      - name: Save Artifact
+        if: steps.check-pods-k3s.outputs.pods-dont-work != 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.artifact_name }}
+          path: ${{ env.path }}${{ env.file_name }}
+  
+      - name: Slack Notification k8s (fail pods)
+        uses: 8398a7/action-slack@v3
+        if: steps.check-pods-k3s.outputs.pods-dont-work != 1
+        with:
+          status: ${{ job.status }}
+          fields: all
+          text: "Some k3s pods have crashed: ${{ steps.check-pods-k3s.outputs.pods-dont-work }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
