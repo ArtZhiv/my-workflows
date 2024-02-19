@@ -16,10 +16,8 @@ jobs:
       - name: setup ssh
         run: |
           mkdir -p ~/.ssh/
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
           ls -la ~/.ssh/
-          cat ~/.ssh/id_rsa
+          touch ~/.ssh/khown_hosts
           cat ~/.ssh/khown_hosts
           echo "$(ssh-keyscan -p ${{ secrets.EC_BASTION_PORT }} ${{ secrets.EC_BASTION_IP }}" >> ~/.ssh/khown_hosts
           cat ~/.ssh/khown_hosts
@@ -27,6 +25,7 @@ jobs:
           cat ~/.ssh/khown_hosts
           eval `ssh-agent -s`
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+          cat ~/.ssh/id_rsa
           
           ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }}" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A" >> output_k8s.log
 
