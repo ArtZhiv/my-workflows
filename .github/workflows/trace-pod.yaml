@@ -67,7 +67,7 @@ jobs:
           name: Dead pods k8s
           path: output_k8s.log
 
-      - name: Slack Notification k8s
+      - name: Slack Notification k8s (fail)
         uses: 8398a7/action-slack@v3
         if: steps.check-pods-k8s.outputs.pods-failed == 1
         with:
@@ -78,14 +78,14 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Slack Notification k8s
+      - name: Slack Notification k8s (ok)
         uses: 8398a7/action-slack@v3
         if: always()
         with:
           icon_url: 'https://github.com/Ensono/azure-vector-icons/blob/master/renders/healthy.png'
           status: custom
           fields: all
-          text: ${{ env.K8S_PODS_JSON }}
+          text: kubectl get pods -A -o json
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     # k3s:
