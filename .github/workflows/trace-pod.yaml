@@ -28,6 +28,7 @@ jobs:
                 echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/private
                 chmod 600 ~/.ssh/private
                 echo "${{ secrets.SSH_KNOW_HOST }}" > ~/.ssh/known_hosts
+                echo "${{ secrets.CONFIG_SSH }}" >> ~/.ssh/config
                 ls -al ~/.ssh/
               env:
                 SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
@@ -38,7 +39,7 @@ jobs:
             - name: setup ssh tunnel
               run: |
                 ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} > ~/.ssh/known_hosts
-                ssh -i ~/.ssh/private -f -N -J ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -L 6443:127.0.0.1:6443 root@192.168.208.5
+                ssh -i ~/.ssh/private -F ~/.ssh/config -f -N -J ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -L 6443:127.0.0.1:6443 root@192.168.208.5
 
             - name: ssh tunnels
               run: |
