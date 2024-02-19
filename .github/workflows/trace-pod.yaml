@@ -84,7 +84,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         if: steps.check-pods-k8s.outputs.pods-failed == 1
         with:
-          icon_url: 'https://github.com/Ensono/azure-vector-icons/blob/master/renders/alert.png'
+          icon_url: 'https://raw.githubusercontent.com/Ensono/azure-vector-icons/master/renders/alert.png'
           status: ${{ job.status }}
           fields: all
           text: "Some pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
@@ -95,11 +95,12 @@ jobs:
         uses: 8398a7/action-slack@v3
         if: always()
         with:
-          icon_url: 'https://github.com/Ensono/azure-vector-icons/blob/master/renders/healthy.png'
+          icon_url: 'https://raw.githubusercontent.com/Ensono/azure-vector-icons/master/renders/healthy.png'
           status: ${{ job.status }}
           fields: all
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
     # k3s:
     #     runs-on: ubuntu-latest
     #     steps:
