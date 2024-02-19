@@ -23,7 +23,7 @@ jobs:
       - name: Connect to K8s master host
         run: |
           mkdir ~/.ssh
-          eval ssh-agent -s
+          eval `ssh-agent -s`
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
           ssh-keyscan -p 32510 ${{ secrets.EC_BASTION_IP }} >> ~/.ssh/known_hosts
           ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510 ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
