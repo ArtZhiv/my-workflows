@@ -1,6 +1,8 @@
 name: Trace pods
 
-on: workflow_dispatch
+on:
+  push:
+    branches: k8s
 
 jobs:
   k8s:
