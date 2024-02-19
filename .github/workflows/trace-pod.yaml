@@ -27,7 +27,7 @@ jobs:
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
           cat ~/.ssh/id_rsa
           
-          ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }}" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A" >> output_k8s.log
+          ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }}" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A"
 
     # k3s:
     #     runs-on: ubuntu-latest
