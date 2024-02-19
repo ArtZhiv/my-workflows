@@ -58,6 +58,7 @@ jobs:
         run: |
           kubectl get pods -A --field-selector=status.phase!=Running 2>&1 | tee ${{ env.path }}${{ env.file_name }}
           echo "pods-dont-work=$(cat ${{ env.path }}${{ env.file_name }} | grep -v 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
+          echo "pods-works=$(kubectl get pods -A)" >> $GITHUB_OUTPUT
 
       - name: Save Artifact
         if: steps.check-pods-k8s.outputs.pods-dont-work == 1
@@ -76,7 +77,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: all
-          text: "Some pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
+          text: "Some pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-works }}"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
