@@ -1,29 +1,30 @@
 name: Trace pods
 
 on:
-    push:
-      branches:
-        - k8s
-    schedule:
-      - cron: '5 * * * *'
+  push:
+    branches:
+      - k8s
+  schedule:
+    - cron: '5 * * * *'
 
 jobs:
-    k8s:
-        runs-on: ubuntu-latest
-        steps:
-            - name: checkout repository
-              uses: actions/checkout@master
-            
-            - name: Install kubectl
-              run: |
-                sudo apt-get update
-                sudo apt-get install -y apt-transport-https ca-certificates curl
-                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  k8s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
 
-            - name: check kubectl version
-              run: |
-                kubectl version
+      - name: setup ssh
+        run: |
+          pwd
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "$(ssh-keyscan -p ${{ secrets.EC_BASTION_PORT }} ${{ secrets.EC_BASTION_IP }}" >> ~/.ssh/khown_hosts
+          ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }} ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
+          eval `ssh-agent -s`
+          ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
+          
+          ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }}" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A" >> output_k8s.log
 
     # k3s:
     #     runs-on: ubuntu-latest
