@@ -47,6 +47,17 @@ jobs:
           SLACK_TITLE: "Some pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+      - name: Slack Notification k8s
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          fields: all
+          text: "Some pods have crashed: ${{ steps.check-pods-k8s.outputs.pods-dont-work }}"
+
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
     # k3s:
     #     runs-on: ubuntu-latest
     #     steps:
