@@ -49,8 +49,12 @@ jobs:
           touch ~/.kube/config
           echo "${{ secrets.K8S_CONF }}" > ~/.kube/config
           export KUBECONFIG=$HOME/.kube/config
-          echo "k8s pods running: " | kubectl get pods -A
-          echo "k8s pods don't running: " | kubectl get pods -A --field-selector=status.phase!=Running
+          
+          echo "k8s pods running: "
+          kubectl get pods -A
+
+          echo "k8s pods don't running: "
+          kubectl get pods -A --field-selector=status.phase!=Running
 
       - name: Check Crash pods k8s
         id: check-pods-k8s
