@@ -42,6 +42,7 @@ jobs:
 
       - name: Check Kubernetes Nodes
         run: |
+          kubectl version
           mkdir -p ~/.kube/
           touch ~/.kube/config
           echo "${{ secrets.K8S_CONF }}" > ~/.kube/config
