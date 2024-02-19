@@ -69,6 +69,12 @@ jobs:
           name: ${{ env.artifact_name }}
           path: ${{ env.path }}${{ env.file_name }}
           
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.artifact_name }}
+          path: ${{ env.path }}
+
       - name: Read artifact
         run:
           echo "${{ env.artifact_name }}:" && cat ${{ env.path }}${{ env.file_name }}
@@ -98,7 +104,6 @@ jobs:
           icon_url: 'https://github.com/Ensono/azure-vector-icons/blob/master/renders/healthy.png'
           status: custom
           fields: all
-          text: kubectl get pods -A -o json
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     # k3s:
