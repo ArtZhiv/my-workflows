@@ -23,13 +23,20 @@ jobs:
 
             - name: check secrets
               run: |
-                echo "${{ secrets.BASTION_HOST }}"
-                echo "${{ secrets.BASTION_NAME }}"
-                echo "${{ secrets.BASTION_PORT }}"
-                echo "${{ secrets.CONFIG_K8S }}"
-                echo "${{ secrets.SSH_KNOW_HOST }}"
-                echo "${{ secrets.SSH_PUB_KEY }}"
-                echo "${{ secrets.SSH_PRIV_KEY }}"
+                echo "Secret SSH_PUB_KEY: ${{ secrets.SSH_PUB_KEY }}"
+                echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
+                chmod 600 secret.key.pem
+                ssh-keygen -l -f secret.key.pem
+              continue-on-error: true
+
+            - name: Connect to K8s master host
+              run: |
+                mkdir ~/.ssh
+                eval ssh-agent -s
+                ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
+                ssh-keyscan -p ${{ secrets.EC_BASTION_PORT }} ${{ secrets.EC_BASTION_IP }} >> ~/.ssh/known_hosts
+                ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }} ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
+                ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p ${{ secrets.EC_BASTION_PORT }}" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A" >> output_k8s.log
 
             # - name: Check SSH_PKEY Secret
             #   run: |
