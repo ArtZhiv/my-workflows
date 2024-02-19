@@ -14,8 +14,8 @@ jobs:
       - uses: actions/checkout@master
       - name: Check SSH_PKEY Secret
         run: |
-          echo "Secret SSH_PKEY: ${{ secrets.SSH_PUB_KEY }}"
-          echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
+          echo "Secret SSH_PKEY: ${{ secrets.SSH_PRIVATE_KEY }}"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > secret.key.pem
           chmod 600 secret.key.pem
           ssh-keygen -l -f secret.key.pem
         continue-on-error: true
@@ -24,7 +24,7 @@ jobs:
         run: |
           mkdir ~/.ssh
           eval ssh-agent -s
-          ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
+          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
           ssh-keyscan -p 32510 ${{ secrets.EC_BASTION_IP }} >> ~/.ssh/known_hosts
           ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510 ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
           ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A" >> output_k8s.log
