@@ -18,10 +18,10 @@ jobs:
               run: |
                 mkdir -p ~/.ssh
                 # chmod 700 ~/.ssh
-                touch ~/.ssh/id_rsa
-                echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/id_rsa
-                chmod 600 ~/.ssh/id_rsa
-                touch ~/.ssh/id_rsa.pub
+                touch ~/.ssh/private.key
+                echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/private.key
+                chmod 600 ~/.ssh/private.key
+                # touch ~/.ssh/id_rsa.pub
                 # echo "${{ secrets.SSH_PUB_KEY }}" > ~/.ssh/id_rsa.pub
                 # chmod 600 ~/.ssh/id_rsa.pub
                 touch ~/.ssh/config
@@ -36,7 +36,7 @@ jobs:
 
             - name: setup ssh tunnel
               run: 
-                ssh -i ~/.ssh/id_rsa -f -N -L 6443:127.0.0.1:6443 root@192.168.208.5
+                ssh -i ~/.ssh/private.key -f -N -L 6443:127.0.0.1:6443 root@192.168.208.5
 
             # - name: setup ssh
             #   uses: webfactory/ssh-agent@v0.9.0
