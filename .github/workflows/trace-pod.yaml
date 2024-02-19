@@ -27,7 +27,7 @@ jobs:
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
           ssh-keyscan -p 32510 ${{ secrets.EC_BASTION_IP }} >> ~/.ssh/known_hosts
           ssh ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510 ssh-keyscan ${{ secrets.K8S_IP }} >> ~/.ssh/known_hosts
-          ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A" >> output_k8s.log
+          ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.EC_BASTION_USERNAME }}@${{ secrets.EC_BASTION_IP }} -p 32510" ${{ secrets.K8S_USERNAME }}@${{ secrets.K8S_IP }} "kubectl get pods -A"
   
       - name: Check Crash pods k8s
         id: check-pods-k8s
