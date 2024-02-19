@@ -21,13 +21,13 @@ jobs:
             #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
             #     sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-            - name: check secrets
-              run: |
-                echo "Secret SSH_PUB_KEY: ${{ secrets.SSH_PUB_KEY }}"
-                echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
-                chmod 600 secret.key.pem
-                ssh-keygen -l -f secret.key.pem
-              continue-on-error: true
+            # - name: check secrets
+            #   run: |
+            #     echo "Secret SSH_PUB_KEY: ${{ secrets.SSH_PUB_KEY }}"
+            #     echo "${{ secrets.SSH_PUB_KEY }}" > secret.key.pem
+            #     chmod 600 secret.key.pem
+            #     ssh-keygen -l -f secret.key.pem
+            #   continue-on-error: true
 
             - name: Connect to K8s master host
               run: |
