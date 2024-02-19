@@ -35,7 +35,7 @@ jobs:
                   eval ssh-agent -s
                   ssh-add - <<< "${{ secrets.SSH_PUB_KEY }}"
                   ssh-keyscan -p ${{ secrets.BASTION_PORT }} ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} >> ~/.ssh/known_hosts
-                  ssh ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }} ssh-keyscan 192.168.208.5 >> ~/.ssh/known_hosts
+                  ssh ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }} ssh-keyscan root@192.168.208.5 >> ~/.ssh/known_hosts
                   ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.BASTION_NAME }}@${{ secrets.BASTION_HOST }} -p ${{ secrets.BASTION_PORT }}" root@192.168.208.5 "kubectl get pods -A"
 
             # - name: setup ssh
