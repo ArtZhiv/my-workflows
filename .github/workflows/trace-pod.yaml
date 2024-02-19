@@ -16,8 +16,9 @@ jobs:
       - name: setup ssh
         run: |
           pwd
+          ls -al ~/
           mkdir -p ~/.ssh/
-          ls -al
+          ls -al ~/
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "$(ssh-keyscan -p ${{ secrets.EC_BASTION_PORT }} ${{ secrets.EC_BASTION_IP }}" >> ~/.ssh/khown_hosts
