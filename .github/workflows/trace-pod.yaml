@@ -44,14 +44,14 @@ jobs:
           sudo mv kubectl /usr/local/bin/
           kubectl version --client
 
-      - name: Check Kubernetes Nodes
+      - name: Check K8S Pods
         run: |
           mkdir -p ~/.kube/
           touch ~/.kube/config
           echo "${{ secrets.K8S_CONF }}" > ~/.kube/config
           export KUBECONFIG=$HOME/.kube/config
           kubectl get pods -A
-          echo "K8S_PODS_JSON='$(kubectl get pods -A -o json)'" >> $GITHUB_ENV
+          kubectl get pods -A -o json
           kubectl get pods -A --field-selector=status.phase!=Running
 
       - name: Check Crash pods k8s
@@ -80,7 +80,7 @@ jobs:
 
       - name: Slack Notification k8s
         uses: 8398a7/action-slack@v3
-        if: steps.check-pods-k8s.outputs.pods-failed == 0
+        if: always()
         with:
           icon_url: 'https://github.com/Ensono/azure-vector-icons/blob/master/renders/healthy.png'
           status: custom
