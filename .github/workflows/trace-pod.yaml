@@ -54,7 +54,7 @@ jobs:
           export KUBECONFIG=$HOME/.kube/config
           kubectl get pods -A
           kubectl get pods -A -o json
-          kubectl get pods -A --field-selector=status.phase!=Running >>
+          kubectl get pods -A --field-selector=status.phase!=Running
 
       - name: Check Crash pods k8s
         id: check-pods-k8s
