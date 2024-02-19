@@ -61,7 +61,7 @@ jobs:
           echo "pods-dont-work=$(cat ${{ env.path }}${{ env.file_name }} | grep 'Running\|Completed ' | wc -l)" >> $GITHUB_OUTPUT
 
       - name: Save Artifact
-        if: steps.check-pods-k8s.outputs.pods-dont-work != 1
+        if: steps.check-pods-k8s.outputs.pods-dont-work == 1
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.artifact_name }}
