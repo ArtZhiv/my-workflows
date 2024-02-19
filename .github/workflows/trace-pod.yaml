@@ -84,8 +84,8 @@ jobs:
         with:
           icon_url: 'https://github.com/Ensono/azure-vector-icons/blob/master/renders/healthy.png'
           status: custom
-          custom_payload: ${{ env.K8S_PODS_JSON }}
           fields: all
+          text: ${{ env.K8S_PODS_JSON }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     # k3s:
